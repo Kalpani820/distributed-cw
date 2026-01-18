@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.westminster.ewallet.grpc";
+
+package ewallet;
+
+// E-Wallet service definition for account operations
+service EWalletService {
+  // Create a new account; returns partition assignment and account number
+  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse);
+
+  // Retrieve the balance of an existing account
+  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse);
+
+  // Transfer funds between accounts; may be within a partition or across
+  rpc Transfer(TransferRequest) returns (TransferResponse);
+
+  // Health check for replica discovery
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+// Request to create an account
+message CreateAccountRequest {
+  string account_holder = 1;
+  double initial_balance = 2;
+  int64 timestamp = 3;
+}
+
+// Response for account creation
+message CreateAccountResponse {
+  bool success = 1;
+  string account_number = 2;
+  string message = 3;
+  int32 partition_id = 4;
+}
+
+// Request to get balance
+message GetBalanceRequest {
+  string account_number = 1;
+  int64 timestamp = 2;
+}
+
+// Response for balance retrieval
+message GetBalanceResponse {
+  bool success = 1;
+  double balance = 2;
+  string message = 3;
+  int64 last_modified = 4;
+}
+
+// Request to transfer funds
+message TransferRequest {
+  string from_account = 1;
+  string to_account = 2;
+  double amount = 3;
+  int64 timestamp = 4;
+  string transaction_id = 5;
+}
+
+// Response for transfer
+message TransferResponse {
+  bool success = 1;
+  string message = 2;
+  string transaction_id = 3;
+  int64 timestamp = 4;
+}
+
+// Request for health check
+message HealthCheckRequest {
+  string requester = 1;
+}
+
+// Response for health check
+message HealthCheckResponse {
+  bool is_leader = 1;
+  int32 partition_id = 2;
+  int32 replica_id = 3;
+  string leader_address = 4;
+}

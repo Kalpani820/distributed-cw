@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.westminster.ewallet.grpc.transaction";
+
+package transaction;
+
+// Two-Phase Commit service for orchestrating atomic cross-partition
+// transactions.  The coordinator invokes these operations on each
+// involved participant (replica) to ensure all-or-nothing semantics.
+service TransactionService {
+  // First phase: prepare.  Participants check whether they can commit the
+  // transaction (e.g., sufficient funds) and lock resources.
+  rpc Prepare(PrepareRequest) returns (PrepareResponse);
+
+  // Second phase: commit.  Participants apply the transaction.
+  rpc Commit(CommitRequest) returns (CommitResponse);
+
+  // Abort the transaction.  Participants release any locks or reserved
+  // resources and roll back any tentative changes.
+  rpc Abort(AbortRequest) returns (AbortResponse);
+}
+
+// Prepare request used by the coordinator.  Contains all details of the
+// transaction so participants can make a decision.
+message PrepareRequest {
+  string transaction_id = 1;
+  string from_account = 2;
+  string to_account = 3;
+  double amount = 4;
+  int64 timestamp = 5;
+}
+
+// Prepare response indicating whether the participant votes to commit.
+message PrepareResponse {
+  bool vote_commit = 1; // true = vote to commit; false = vote to abort
+  string message = 2;
+}
+
+// Commit request instructing the participant to apply the prepared
+// transaction.
+message CommitRequest {
+  string transaction_id = 1;
+}
+
+// Commit response acknowledging commit result.
+message CommitResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Abort request instructing the participant to roll back the prepared
+// transaction.
+message AbortRequest {
+  string transaction_id = 1;
+}
+
+// Abort response acknowledging abort result.
+message AbortResponse {
+  bool success = 1;
+  string message = 2;
+}

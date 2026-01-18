@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.westminster.ewallet.grpc.raft";
+
+package raft;
+
+// Raft consensus service definition.  This service exposes the
+// operations required for leader election and log replication.
+service RaftService {
+  // Request a vote from peers when entering the candidate state.
+  rpc RequestVote(RequestVoteRequest) returns (RequestVoteResponse);
+
+  // Append log entries to a follower's log.  Also used for heartbeats.
+  rpc AppendEntries(AppendEntriesRequest) returns (AppendEntriesResponse);
+
+  // A dedicated heartbeat RPC to decouple heartbeat messages from log
+  // replication.  This simplifies follower logic and keeps heartbeats
+  // lightweight.
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+}
+
+// RequestVote RPC arguments.
+message RequestVoteRequest {
+  int32 term = 1;              // candidate's term
+  int32 candidate_id = 2;      // candidate requesting vote
+  int32 last_log_index = 3;    // index of candidate's last log entry
+  int32 last_log_term = 4;     // term of candidate's last log entry
+}
+
+// RequestVote RPC reply.
+message RequestVoteResponse {
+  int32 term = 1;         // current term, for candidate to update itself
+  bool vote_granted = 2;  // true means candidate received vote
+}
+
+// AppendEntries RPC arguments.
+message AppendEntriesRequest {
+  int32 term = 1;                // leader's term
+  int32 leader_id = 2;           // leader's ID so follower can redirect clients
+  int32 prev_log_index = 3;      // index of log entry immediately preceding new ones
+  int32 prev_log_term = 4;       // term of prev_log_index entry
+  repeated LogEntry entries = 5; // log entries to store (empty for heartbeat)
+  int32 leader_commit = 6;       // leader's commit index
+}
+
+// AppendEntries RPC reply.
+message AppendEntriesResponse {
+  int32 term = 1;   // current term, for leader to update itself
+  bool success = 2; // true if follower contained entry matching prev_log_index and prev_log_term
+}
+
+// Dedicated heartbeat arguments.
+message HeartbeatRequest {
+  int32 term = 1;    // leader's term
+  int32 leader_id = 2;
+}
+
+// Dedicated heartbeat reply.
+message HeartbeatResponse {
+  int32 term = 1;
+  bool acknowledged = 2;
+}
+
+// Log entry used in Raft log replication.
+message LogEntry {
+  int32 term = 1;
+  int32 index = 2;
+  string command = 3;
+  int64 timestamp = 4;
+}
