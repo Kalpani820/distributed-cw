@@ -1,6 +1,6 @@
 package com.westminster.ewallet.client;
 
-import com.westminster.ewallet.grpc.ewallet.*;
+import com.westminster.ewallet.grpc.*;
 import com.westminster.ewallet.transaction.TransactionCoordinator;
 import com.westminster.ewallet.util.AccountUtils;
 import io.grpc.ManagedChannel;

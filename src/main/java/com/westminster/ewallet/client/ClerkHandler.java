@@ -1,8 +1,9 @@
 package com.westminster.ewallet.client;
 
-import com.westminster.ewallet.grpc.ewallet.CreateAccountRequest;
-import com.westminster.ewallet.grpc.ewallet.CreateAccountResponse;
-import com.westminster.ewallet.grpc.ewallet.EWalletServiceGrpc;
+import com.westminster.ewallet.grpc.*;
+import com.westminster.ewallet.grpc.CreateAccountRequest;
+import com.westminster.ewallet.grpc.CreateAccountResponse;
+import com.westminster.ewallet.grpc.EWalletServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.slf4j.Logger;
@@ -65,7 +66,7 @@ public class ClerkHandler {
             try {
                 ch = ManagedChannelBuilder.forTarget(addr).usePlaintext().build();
                 EWalletServiceGrpc.EWalletServiceBlockingStub stub = EWalletServiceGrpc.newBlockingStub(ch);
-                var req = com.westminster.ewallet.grpc.ewallet.HealthCheckRequest.newBuilder().setRequester("clerk").build();
+                var req = com.westminster.ewallet.grpc.HealthCheckRequest.newBuilder().setRequester("clerk").build();
                 var resp = stub.healthCheck(req);
                 if (resp.getIsLeader()) {
                     return addr;

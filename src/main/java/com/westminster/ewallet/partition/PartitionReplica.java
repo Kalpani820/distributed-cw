@@ -2,15 +2,15 @@ package com.westminster.ewallet.partition;
 
 import com.westminster.ewallet.consensus.RaftNode;
 import com.westminster.ewallet.grpc.*;
-import com.westminster.ewallet.grpc.ewallet.EWalletServiceGrpc;
-import com.westminster.ewallet.grpc.ewallet.CreateAccountRequest;
-import com.westminster.ewallet.grpc.ewallet.CreateAccountResponse;
-import com.westminster.ewallet.grpc.ewallet.GetBalanceRequest;
-import com.westminster.ewallet.grpc.ewallet.GetBalanceResponse;
-import com.westminster.ewallet.grpc.ewallet.TransferRequest;
-import com.westminster.ewallet.grpc.ewallet.TransferResponse;
-import com.westminster.ewallet.grpc.ewallet.HealthCheckRequest;
-import com.westminster.ewallet.grpc.ewallet.HealthCheckResponse;
+import com.westminster.ewallet.grpc.EWalletServiceGrpc;
+import com.westminster.ewallet.grpc.CreateAccountRequest;
+import com.westminster.ewallet.grpc.CreateAccountResponse;
+import com.westminster.ewallet.grpc.GetBalanceRequest;
+import com.westminster.ewallet.grpc.GetBalanceResponse;
+import com.westminster.ewallet.grpc.TransferRequest;
+import com.westminster.ewallet.grpc.TransferResponse;
+import com.westminster.ewallet.grpc.HealthCheckRequest;
+import com.westminster.ewallet.grpc.HealthCheckResponse;
 import com.westminster.ewallet.grpc.transaction.*;
 import com.westminster.ewallet.util.AccountUtils;
 import com.westminster.ewallet.util.LamportClock;
@@ -25,15 +25,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.ReentrantLock;
+import java.util.concurrent.locks.ReentrantLock;
+
 
 /**
  * PartitionReplica represents one replica in a partition.  It exposes gRPC
  * services for account operations and participates in leader election via
  * Raft.  Each replica maintains its own account store and transaction log.
  */
-public class PartitionReplica extends EWalletServiceGrpc.EWalletServiceImplBase
-        implements TransactionServiceGrpc.TransactionService {
+public class PartitionReplica extends EWalletServiceGrpc.EWalletServiceImplBase {
     private static final Logger log = LoggerFactory.getLogger(PartitionReplica.class);
 
     private final int partitionId;
@@ -84,7 +84,7 @@ public class PartitionReplica extends EWalletServiceGrpc.EWalletServiceImplBase
                 .start();
         // 2PC service runs on servicePort + 1000
         txServer = ServerBuilder.forPort(servicePort + 1000)
-                .addService(this)
+                .addService(new TxServiceImpl())
                 .build()
                 .start();
         log.info("PartitionReplica P{}-R{} started on ports {} (API) and {} (2PC)",
@@ -366,4 +366,29 @@ public class PartitionReplica extends EWalletServiceGrpc.EWalletServiceImplBase
             this.timestamp = ts;
         }
     }
+
+    private class TxServiceImpl extends TransactionServiceGrpc.TransactionServiceImplBase {
+
+    @Override
+    public void prepare(PrepareRequest request, StreamObserver<PrepareResponse> responseObserver) {
+        PartitionReplica.this.prepare(request, responseObserver);
+    }
+
+    @Override
+    public void commit(CommitRequest request, StreamObserver<CommitResponse> responseObserver) {
+        PartitionReplica.this.commit(request, responseObserver);
+    }
+
+    @Override
+    public void abort(AbortRequest request, StreamObserver<AbortResponse> responseObserver) {
+        PartitionReplica.this.abort(request, responseObserver);
+    }
+}
+public void blockUntilShutdown() throws InterruptedException {
+    if (server != null) {
+        server.awaitTermination();
+    }
+}
+
+
 }

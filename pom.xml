@@ -19,6 +19,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+           <groupId>javax.annotation</groupId>
+           <artifactId>javax.annotation-api</artifactId>
+           <version>1.3.2</version>
+        </dependency>
         <!-- gRPC dependencies -->
         <dependency>
             <groupId>io.grpc</groupId>
@@ -67,6 +72,7 @@
             <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>

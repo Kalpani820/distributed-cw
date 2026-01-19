@@ -1,8 +1,9 @@
 package com.westminster.ewallet.transaction;
 
-import com.westminster.ewallet.grpc.ewallet.EWalletServiceGrpc;
-import com.westminster.ewallet.grpc.ewallet.HealthCheckRequest;
-import com.westminster.ewallet.grpc.ewallet.HealthCheckResponse;
+import com.westminster.ewallet.grpc.*;
+import com.westminster.ewallet.grpc.EWalletServiceGrpc;
+import com.westminster.ewallet.grpc.HealthCheckRequest;
+import com.westminster.ewallet.grpc.HealthCheckResponse;
 import com.westminster.ewallet.grpc.transaction.*;
 import com.westminster.ewallet.util.AccountUtils;
 import io.grpc.ManagedChannel;
